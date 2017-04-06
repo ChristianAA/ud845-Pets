@@ -78,11 +78,38 @@ public class CatalogActivity extends AppCompatActivity {
 
         Cursor c = db.query(PetEntry.TABLE_NAME, projection, null, null, null, null, null);
 
+        TextView displayView = (TextView) findViewById(R.id.text_view_pet);
+
         try {
             // Display the number of rows in the Cursor (which reflects the number of rows in the
             // pets table in the database).
-            TextView displayView = (TextView) findViewById(R.id.text_view_pet);
-            displayView.setText("Number of rows in pets database table: " + c.getCount());
+            displayView.setText("Number of rows in pets database table: " + c.getCount()+ " pets. \n\n");
+            displayView.append(PetEntry._ID + " - " +
+                    PetEntry.COLUMN_PET_NAME + " - " +
+                    PetEntry.COLUMN_PET_BREED + " - " +
+                    PetEntry.COLUMN_PET_GENDER + " - " +
+                    PetEntry.COLUMN_PET_WEIGHT + "\n");
+
+            int idColumnIndex = c.getColumnIndex(PetEntry._ID);
+            int nameColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_NAME);
+            int breedColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_BREED);
+            int genderColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_GENDER);
+            int weightColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
+
+            while (c.moveToNext()){
+                int currentID = c.getInt(idColumnIndex);
+                String currentName = c.getString(nameColumnIndex);
+                String currentBreed = c.getString(breedColumnIndex);
+                int currentGender = c.getInt(genderColumnIndex);
+                int currentWeight = c.getInt(weightColumnIndex);
+
+                displayView.append(("\n" + currentID + " - " +
+                        currentName + " - " +
+                        currentBreed + " - " +
+                        currentGender + " - " +
+                        currentWeight));
+            }
+
         } finally {
             // Always close the cursor when you're done reading from it. This releases all its
             // resources and makes it invalid.
@@ -107,7 +134,7 @@ public class CatalogActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_NAME, "Toto");
         values.put(PetEntry.COLUMN_PET_BREED, "Terrier");
         values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
-        values.put(PetEntry.COLUMN_PET_NAME, 7);
+        values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
 
         long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
     }
