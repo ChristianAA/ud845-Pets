@@ -103,6 +103,24 @@ public class PetProvider extends ContentProvider {
      */
     private Uri insertPet(Uri uri, ContentValues values) {
 
+        // Null name value
+        String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
+        if (name.isEmpty()){
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+
+        // Invalid Gender
+        Integer gender = values.getAsInteger(PetEntry.COLUMN_PET_GENDER);
+        if (gender == null || !PetEntry.isValidGender(gender)){
+            throw new IllegalArgumentException("Pet requires a valid gender");
+        }
+
+        // weight is less than 0 and its not -1
+        Integer weight = values.getAsInteger(PetEntry.COLUMN_PET_WEIGHT);
+        if (weight != null && weight < 0){
+            throw new IllegalArgumentException("Pet requires valid weight");
+        }
+
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
         long newRowId = database.insert(PetEntry.TABLE_NAME, null, values);
@@ -112,6 +130,7 @@ public class PetProvider extends ContentProvider {
             return null;
         }
 
+        // Return the new URI with the ID (of the newly inserted row) appended at the end
         return ContentUris.withAppendedId(uri, newRowId);
     }
 
