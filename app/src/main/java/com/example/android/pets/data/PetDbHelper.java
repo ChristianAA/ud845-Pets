@@ -23,18 +23,13 @@ public final class PetDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        String TEXT_TYPE = " TEXT";
-        String INTEGER_TYPE = " INTEGER";
-        String COMMA_SEP = ", ";
-
-
         String SQL_CREATE_ENTRIES =
                 "CREATE TABLE " + PetEntry.TABLE_NAME + " (" +
-                        PetEntry._ID + INTEGER_TYPE + " PRIMARY KEY AUTOINCREMENT" + COMMA_SEP +
-                        PetEntry.COLUMN_PET_NAME + TEXT_TYPE + "TEXT NOT NULL" + COMMA_SEP +
-                        PetEntry.COLUMN_PET_BREED + TEXT_TYPE + COMMA_SEP +
-                        PetEntry.COLUMN_PET_GENDER + INTEGER_TYPE + " NOT NULL" + COMMA_SEP +
-                        PetEntry.COLUMN_PET_WEIGHT + INTEGER_TYPE + " NOT NULL DEFAULT 0" + " )";
+                        PetEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        PetEntry.COLUMN_PET_NAME + " TEXT NOT NULL, " +
+                        PetEntry.COLUMN_PET_BREED + " TEXT, " +
+                        PetEntry.COLUMN_PET_GENDER + " INTEGER NOT NULL, " +
+                        PetEntry.COLUMN_PET_WEIGHT +  " INTEGER NOT NULL DEFAULT 0);";
 
         db.execSQL(SQL_CREATE_ENTRIES);
     }

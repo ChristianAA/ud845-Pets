@@ -15,6 +15,8 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -26,8 +28,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.android.pets.data.PetContract.PetEntry;
+import com.example.android.pets.data.PetDbHelper;
 
 
 /**
@@ -65,6 +69,7 @@ public class EditorActivity extends AppCompatActivity {
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
 
         setupSpinner();
+
     }
 
     /**
@@ -89,11 +94,11 @@ public class EditorActivity extends AppCompatActivity {
                 String selection = (String) parent.getItemAtPosition(position);
                 if (!TextUtils.isEmpty(selection)) {
                     if (selection.equals(getString(R.string.gender_male))) {
-                        mGender = PetEntry.GENDER_UNKNOWN; // Male
+                        mGender = PetEntry.GENDER_MALE; // Male
                     } else if (selection.equals(getString(R.string.gender_female))) {
-                        mGender = PetEntry.GENDER_MALE; // Female
+                        mGender = PetEntry.GENDER_FEMALE; // Female
                     } else {
-                        mGender = PetEntry.GENDER_FEMALE; // Unknown
+                        mGender = PetEntry.GENDER_UNKNOWN; // Unknown
                     }
                 }
             }
@@ -101,9 +106,47 @@ public class EditorActivity extends AppCompatActivity {
             // Because AdapterView is an abstract class, onNothingSelected must be defined
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                mGender = PetEntry.GENDER_FEMALE; // Unknown
+                mGender = PetEntry.GENDER_UNKNOWN; // Unknown
             }
         });
+    }
+
+    private void insertPet(){
+
+        String nameString = mNameEditText.getText().toString().trim();
+        String BreedString = mBreedEditText.getText().toString().trim();
+        String weightString = mWeightEditText.getText().toString().trim();
+
+        //The App crashes at lesson 2.4 if you save a pet without value
+        int weightValue;
+        if (weightString.isEmpty()){
+            weightValue = 0;
+        }
+        else {
+            weightValue = Integer.parseInt(weightString);
+        }
+
+        PetDbHelper mDbHelper = new PetDbHelper(this);
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        values.put(PetEntry.COLUMN_PET_NAME, nameString);
+        values.put(PetEntry.COLUMN_PET_BREED, BreedString);
+        values.put(PetEntry.COLUMN_PET_GENDER, mGender);
+        values.put(PetEntry.COLUMN_PET_NAME, weightValue);
+
+        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+
+        // If Insert return no error (something different of -1), we show the toast with the ID
+        if (newRowId != -1){
+            Toast.makeText(getApplicationContext(), "Pet saved with id: " + newRowId, Toast.LENGTH_SHORT).show();
+        }
+        // Else, insert returns an error
+        else {
+            Toast.makeText(getApplicationContext(), "Error with saving pet", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -120,7 +163,9 @@ public class EditorActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                // Do nothing for now
+                insertPet();
+                //Exit the activity and go to Catalog activity
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
