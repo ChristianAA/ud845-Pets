@@ -11,6 +11,9 @@ import android.util.Log;
 
 import com.example.android.pets.data.PetContract.PetEntry;
 
+import static com.example.android.pets.data.PetContract.CONTENT_AUTHORITY;
+import static com.example.android.pets.data.PetContract.PATH_PETS;
+
 /**
  * Created by Christian PC on 06/04/2017.
  */
@@ -38,8 +41,8 @@ public class PetProvider extends ContentProvider {
         // The calls to addURI() go here, for all of the content URI patterns that the provider
         // should recognize. All paths added to the UriMatcher have a corresponding code to return
         // when a match is found.
-        sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS, PETS);
-        sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PET_ID);
+        sUriMatcher.addURI(CONTENT_AUTHORITY, PATH_PETS, PETS);
+        sUriMatcher.addURI(CONTENT_AUTHORITY, PATH_PETS + "/#", PET_ID);
     }
 
     private PetDbHelper mDbHelper;
@@ -186,10 +189,18 @@ public class PetProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri url) {
-        return null;
+    public String getType(Uri uri) {
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return PetEntry.CONTENT_LIST_TYPE;
+            case PET_ID:
+                return PetEntry.CONTENT_ITEM_TYPE;
+            default:
+                throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
+        }
     }
-
+    
     // Null name value
     public void checkName(ContentValues values) {
         String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
