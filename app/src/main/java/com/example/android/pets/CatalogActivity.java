@@ -73,6 +73,10 @@ public class CatalogActivity extends AppCompatActivity {
         PetCursorAdapter itemAdapter = new PetCursorAdapter(this, c);
         // Attach cursor adapter to the ListView
         petListView.setAdapter(itemAdapter);
+
+        // EmptyView
+        View emptyView = findViewById(R.id.empty_view);
+        petListView.setEmptyView(emptyView);
    }
 
     @Override
