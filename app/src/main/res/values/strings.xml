@@ -66,13 +66,16 @@
     <string name="editor_insert_pet_successful">Pet saved</string>
 
     <!-- Toast message in editor when new pet has been successfully edited [CHAR LIMIT=NONE] -->
-    <string name="editor_edit_pet_successful">Pet saved</string>
+    <string name="editor_edit_pet_successful">Pet edit</string>
 
     <!-- Toast message in editor when new pet has failed to be inserted [CHAR LIMIT=NONE] -->
     <string name="editor_insert_pet_failed">Error with saving pet</string>
 
     <!-- Toast message in editor when new pet has failed to be edited[CHAR LIMIT=NONE] -->
     <string name="editor_edit_pet_failed">Error with editing pet</string>
+
+    <!-- Toast message in editor when new empty pet has failed to be saved[CHAR LIMIT=NONE] -->
+    <string name="editor_insert_empty_name_failed">Please, insert a name </string>
 
     <!-- Title text for the empty view, which describes the empty dog house image [CHAR LIMIT=50] -->
     <string name="empty_view_title_text">It\'s a bit lonely here...</string>

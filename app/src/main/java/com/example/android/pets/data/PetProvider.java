@@ -231,7 +231,7 @@ public class PetProvider extends ContentProvider {
     // Null name value
     public void checkName(ContentValues values) {
         String name = values.getAsString(PetEntry.COLUMN_PET_NAME);
-        if (name.isEmpty()){
+        if (name == null){
             throw new IllegalArgumentException("Pet requires a name");
         }
     }

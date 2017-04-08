@@ -210,21 +210,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private void savePet() {
 
         String nameString = mNameEditText.getText().toString().trim();
-        String BreedString = mBreedEditText.getText().toString().trim();
+        String breedString = mBreedEditText.getText().toString().trim();
         String weightString = mWeightEditText.getText().toString().trim();
 
-        //The App crashes at lesson 2.4 if you save a pet without value
-        int weightValue;
-        if (weightString.isEmpty()) {
-            weightValue = 0;
-        } else {
+        // Return if the user press save without entering a name
+        if (TextUtils.isEmpty(nameString)){
+            return;
+        }
+
+        // The App crashes at lesson 2.4 if you save a pet without value
+        int weightValue = 0;
+        // If weightString is not empty, we enter the if and pass the string to int... else, weightValue will be 0;
+        if (!TextUtils.isEmpty(weightString)) {
             weightValue = Integer.parseInt(weightString);
         }
 
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
         values.put(PetEntry.COLUMN_PET_NAME, nameString);
-        values.put(PetEntry.COLUMN_PET_BREED, BreedString);
+        values.put(PetEntry.COLUMN_PET_BREED, breedString);
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
         values.put(PetEntry.COLUMN_PET_WEIGHT, weightValue);
 
@@ -263,7 +267,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 savePet();
-                //Exit the activity and go to Catalog activity
+                // Break if the user press save without entering a name and use a toast to inform
+                String nameString = mNameEditText.getText().toString().trim();
+                if ( TextUtils.isEmpty(nameString)){
+                    Toast.makeText(getApplicationContext(), R.string.editor_insert_empty_name_failed, Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                //Else, exit the activity and go to Catalog activity
                 finish();
                 return true;
             // Respond to a click on the "Delete" menu option
