@@ -206,7 +206,7 @@ public class PetProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
-        
+
         // If 1 or more rows were deleted, then notify all listeners that the data at the given URI has changed
         if (rowsDeleted != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
