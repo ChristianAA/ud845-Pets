@@ -15,8 +15,11 @@
  */
 package com.example.android.pets;
 
+import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,7 +35,13 @@ import com.example.android.pets.data.PetContract.PetEntry;
 /**
  * Displays list of pets that were entered and stored in the app.
  */
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    /** Adapter for the ListView */
+    PetCursorAdapter mPetCursorAdapter;
+
+    /** Unique ID for the pet data loader */
+    private static final int PET_LOADER_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,36 +57,41 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
-
-    @Override
-    protected void onStart(){
-        super.onStart();
-        displayDatabaseInfo();
-    }
-
-    private void displayDatabaseInfo() {
-
-        String[] projection = {
-                PetEntry._ID,
-                PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED,
-                PetEntry.COLUMN_PET_GENDER,
-                PetEntry.COLUMN_PET_WEIGHT};
-
-        Cursor c = getContentResolver().query(PetEntry.CONTENT_URI, projection,null,null,null);
 
         // Find ListView to populate
         ListView petListView = (ListView) findViewById(R.id.list);
-        // Setup cursor adapter using cursor from last step
-        PetCursorAdapter itemAdapter = new PetCursorAdapter(this, c);
-        // Attach cursor adapter to the ListView
-        petListView.setAdapter(itemAdapter);
 
         // EmptyView
         View emptyView = findViewById(R.id.empty_view);
         petListView.setEmptyView(emptyView);
-   }
+
+        // Setup cursor adapter using cursor from last step
+        mPetCursorAdapter = new PetCursorAdapter(this, null);
+        // Attach cursor adapter to the ListView
+        petListView.setAdapter(mPetCursorAdapter);
+        // Kick off the loader
+        getLoaderManager().initLoader(PET_LOADER_ID,null,this);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                PetEntry._ID,
+                PetEntry.COLUMN_PET_NAME,
+                PetEntry.COLUMN_PET_BREED};
+
+        return new CursorLoader(this,PetEntry.CONTENT_URI, projection,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mPetCursorAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mPetCursorAdapter.swapCursor(null);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -106,7 +120,6 @@ public class CatalogActivity extends AppCompatActivity {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
                 insertPet();
-                displayDatabaseInfo();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
