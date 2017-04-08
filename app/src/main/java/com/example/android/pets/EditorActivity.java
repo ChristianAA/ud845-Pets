@@ -207,7 +207,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         });
     }
 
-    private void insertPet(){
+    private void savePet() {
 
         String nameString = mNameEditText.getText().toString().trim();
         String BreedString = mBreedEditText.getText().toString().trim();
@@ -215,10 +215,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         //The App crashes at lesson 2.4 if you save a pet without value
         int weightValue;
-        if (weightString.isEmpty()){
+        if (weightString.isEmpty()) {
             weightValue = 0;
-        }
-        else {
+        } else {
             weightValue = Integer.parseInt(weightString);
         }
 
@@ -229,14 +228,23 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(PetEntry.COLUMN_PET_GENDER, mGender);
         values.put(PetEntry.COLUMN_PET_WEIGHT, weightValue);
 
-        Uri mNewUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
-
-        // Error checking
-        if (mNewUri == null) {
-            Toast.makeText(getApplicationContext(), R.string.editor_insert_pet_failed, Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(getApplicationContext(), R.string.editor_insert_pet_successful, Toast.LENGTH_SHORT).show();
+        //If we are adding a PET, title is equal to Add a pet.
+        if (getTitle() == getString(R.string.editor_activity_title_new_pet)) {
+            //So we use the insert method
+            Uri mNewUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
+            if (mNewUri == null) {
+                Toast.makeText(getApplicationContext(), R.string.editor_insert_pet_failed, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.editor_insert_pet_successful, Toast.LENGTH_SHORT).show();
+            }
+            //Else, we are editing an existing pet.
+        } else {
+            int mmNewUri = getContentResolver().update(mCurrentPetUri, values,null,null);
+            if (mmNewUri == -1) {
+                Toast.makeText(getApplicationContext(), R.string.editor_edit_pet_failed, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), R.string.editor_edit_pet_successful, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -254,7 +262,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
-                insertPet();
+                savePet();
                 //Exit the activity and go to Catalog activity
                 finish();
                 return true;
