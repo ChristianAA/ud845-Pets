@@ -80,6 +80,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (mCurrentPetUri  == null){
             // If mCurrentPetUri is empty, we are adding a new pet
             setTitle(getString(R.string.editor_activity_title_new_pet));
+            // Invalidate the options menu, so the "Delete" menu option can be hidden.
+            invalidateOptionsMenu();
         }
         else{
             // Else we are editing an existing pet
@@ -258,6 +260,21 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // This adds menu items to the app bar.
         getMenuInflater().inflate(R.menu.menu_editor, menu);
         return true;
+    }
+
+    /**
+     * This method is called after invalidateOptionsMenu(), so that the
+     * menu can be updated (some menu items can be hidden or made visible).
+    */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new pet, hide the "Delete" menu item.
+            if (mCurrentPetUri == null) {
+                MenuItem menuItem = menu.findItem(R.id.action_delete);
+                menuItem.setVisible(false);
+            }
+            return true;
     }
 
     @Override
