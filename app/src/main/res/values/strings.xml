@@ -90,7 +90,16 @@
     <string name="editor_delete_pet_failed">Error with deleting pet</string>
 
     <!-- Dialog message to ask the user to confirm deleting the current pet [CHAR LIMIT=NONE] -->
-    <string name="delete_dialog_msg">Delete this pet?</string>
+    <string name="editor_delete_dialog_msg">Delete this pet?</string>
+
+    <!-- Toast message in catalog when current all pets are successfully deleted [CHAR LIMIT=NONE] -->
+    <string name="catalog_delete_pets_successful">All pets deleted</string>
+
+    <!-- Toast message in catalog when failed to delete all pets [CHAR LIMIT=NONE] -->
+    <string name="catalog_delete_pets_failed">Error with deleting pets</string>
+
+    <!-- Dialog message to ask the user to confirm deleting all pets [CHAR LIMIT=NONE] -->
+    <string name="catalog_delete_dialog_msg">Delete all pet?</string>
 
     <!-- Dialog button text for the option to confirm deleting the current pet [CHAR LIMIT=20] -->
     <string name="delete">Delete</string>
