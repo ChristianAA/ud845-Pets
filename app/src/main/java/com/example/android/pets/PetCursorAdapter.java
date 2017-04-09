@@ -39,9 +39,16 @@ public class PetCursorAdapter extends CursorAdapter {
         String nameColumnIndex = cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME));
         String summaryColumnIndex = cursor.getString(cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED));
 
-        // Populate fields with extracted properties
+        // Set the name
         nameTextView.setText(nameColumnIndex);
-        summaryTextView.setText(summaryColumnIndex);
+
+        // Set the summary, unknown if its empty
+        if (summaryColumnIndex.isEmpty()){
+            summaryTextView.setText(context.getString(R.string.unknown_breed));
+        }
+        else{
+            summaryTextView.setText(summaryColumnIndex);
+        }
     }
 }
 
