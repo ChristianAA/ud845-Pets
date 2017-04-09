@@ -15,24 +15,38 @@
  */
 package com.example.android.pets;
 
+import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.android.pets.data.PetContract.PetEntry;
 
 /**
  * Displays list of pets that were entered and stored in the app.
  */
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    /** Adapter for the ListView */
+    PetCursorAdapter mPetCursorAdapter;
+
+    /** Unique ID for the pet data loader */
+    private static final int PET_LOADER_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,63 +62,63 @@ public class CatalogActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        // Find ListView to populate
+        ListView petListView = (ListView) findViewById(R.id.list);
+
+        // EmptyView
+        View emptyView = findViewById(R.id.empty_view);
+        petListView.setEmptyView(emptyView);
+
+        // Call onPrepareOptionsMenu
+        invalidateOptionsMenu();
+
+        // Setup cursor adapter using cursor from last step
+        mPetCursorAdapter = new PetCursorAdapter(this, null);
+        // Attach cursor adapter to the ListView
+        petListView.setAdapter(mPetCursorAdapter);
+        // Kick off the loader
+        getLoaderManager().initLoader(PET_LOADER_ID,null,this);
+
+
+        petListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                // Create the intent to go to EditorActivity
+                Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+
+                //Form the URI + the specific ID of the pet that we want to edit
+                Uri currentPetUri = ContentUris.withAppendedId(PetEntry.CONTENT_URI,id);
+
+                //Set the data to the intent
+                intent.setData(currentPetUri);
+
+                //Lauch the activity to display the data for the current pet
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
-    protected void onStart(){
-        super.onStart();
-        displayDatabaseInfo();
-    }
-
-    private void displayDatabaseInfo() {
-
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {
                 PetEntry._ID,
                 PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED,
-                PetEntry.COLUMN_PET_GENDER,
-                PetEntry.COLUMN_PET_WEIGHT};
+                PetEntry.COLUMN_PET_BREED};
 
-        Cursor c = getContentResolver().query(PetEntry.CONTENT_URI, projection,null,null,null);
+        return new CursorLoader(this,PetEntry.CONTENT_URI, projection,null,null,null);
+    }
 
-        TextView displayView = (TextView) findViewById(R.id.text_view_pet);
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mPetCursorAdapter.swapCursor(data);
+    }
 
-        try {
-            // Display the number of rows in the Cursor (which reflects the number of rows in the
-            // pets table in the database).
-            displayView.setText("Number of rows in pets database table: " + c.getCount()+ " pets. \n\n");
-            displayView.append(PetEntry._ID + " - " +
-                    PetEntry.COLUMN_PET_NAME + " - " +
-                    PetEntry.COLUMN_PET_BREED + " - " +
-                    PetEntry.COLUMN_PET_GENDER + " - " +
-                    PetEntry.COLUMN_PET_WEIGHT + "\n");
-
-            int idColumnIndex = c.getColumnIndex(PetEntry._ID);
-            int nameColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_NAME);
-            int breedColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_BREED);
-            int genderColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_GENDER);
-            int weightColumnIndex = c.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
-
-            while (c.moveToNext()){
-                int currentID = c.getInt(idColumnIndex);
-                String currentName = c.getString(nameColumnIndex);
-                String currentBreed = c.getString(breedColumnIndex);
-                int currentGender = c.getInt(genderColumnIndex);
-                int currentWeight = c.getInt(weightColumnIndex);
-
-                displayView.append(("\n" + currentID + " - " +
-                        currentName + " - " +
-                        currentBreed + " - " +
-                        currentGender + " - " +
-                        currentWeight));
-            }
-
-        } finally {
-            // Always close the cursor when you're done reading from it. This releases all its
-            // resources and makes it invalid.
-            c.close();
-        }
-   }
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mPetCursorAdapter.swapCursor(null);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -123,7 +137,7 @@ public class CatalogActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_GENDER, PetEntry.GENDER_MALE);
         values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
 
-        Uri mNewUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
+        getContentResolver().insert(PetEntry.CONTENT_URI, values);
     }
 
     @Override
@@ -133,13 +147,66 @@ public class CatalogActivity extends AppCompatActivity {
             // Respond to a click on the "Insert dummy data" menu option
             case R.id.action_insert_dummy_data:
                 insertPet();
-                displayDatabaseInfo();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
-                // Do nothing for now
+                showDeleteConfirmationDialog();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the postivie and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.catalog_delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                deletePet();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Perform the deletion of the pet in the database.
+     */
+    private void deletePet() {
+        int rowsDeleted = getContentResolver().delete(PetEntry.CONTENT_URI, null, null);
+        if (rowsDeleted == 0) {
+            Toast.makeText(this, getString(R.string.catalog_delete_pets_failed), Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, getString(R.string.catalog_delete_pets_successful), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If no pets, hide the "Delete All" menu item.
+        View emptyView = findViewById(R.id.empty_view);
+        if (emptyView.isShown()){
+            MenuItem menuItem = menu.findItem(R.id.action_delete_all_entries);
+            menuItem.setVisible(false);
+        }
+        else{
+            MenuItem menuItem = menu.findItem(R.id.action_delete_all_entries);
+            menuItem.setVisible(true);
+        }
+        return true;
     }
 }
