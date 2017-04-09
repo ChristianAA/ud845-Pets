@@ -70,6 +70,9 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         View emptyView = findViewById(R.id.empty_view);
         petListView.setEmptyView(emptyView);
 
+        // Call onPrepareOptionsMenu
+        invalidateOptionsMenu();
+
         // Setup cursor adapter using cursor from last step
         mPetCursorAdapter = new PetCursorAdapter(this, null);
         // Attach cursor adapter to the ListView
@@ -189,5 +192,21 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         } else {
             Toast.makeText(this, getString(R.string.catalog_delete_pets_successful), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If no pets, hide the "Delete All" menu item.
+        View emptyView = findViewById(R.id.empty_view);
+        if (emptyView.isShown()){
+            MenuItem menuItem = menu.findItem(R.id.action_delete_all_entries);
+            menuItem.setVisible(false);
+        }
+        else{
+            MenuItem menuItem = menu.findItem(R.id.action_delete_all_entries);
+            menuItem.setVisible(true);
+        }
+        return true;
     }
 }
